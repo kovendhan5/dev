@@ -13,31 +13,46 @@ const app = express();
 // Security middleware
 app.use(helmet());
 
-// CORS configuration - Allow all origins for development
+// CORS configuration - Enhanced for better compatibility
 const corsOptions = {
   origin: true, // Allow all origins
-  methods: ['GET', 'POST', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'X-Requested-With'],
+  methods: ['GET', 'POST', 'OPTIONS', 'HEAD'],
+  allowedHeaders: [
+    'Content-Type', 
+    'Authorization', 
+    'Accept', 
+    'X-Requested-With',
+    'Origin',
+    'Access-Control-Request-Method',
+    'Access-Control-Request-Headers'
+  ],
   credentials: false,
-  optionsSuccessStatus: 200 // Some legacy browsers choke on 204
+  optionsSuccessStatus: 200, // Some legacy browsers choke on 204
+  maxAge: 86400 // Cache preflight for 24 hours
 };
 
 // Apply CORS to all routes
 app.use(cors(corsOptions));
 
 // Handle preflight requests explicitly
-app.options('*', cors(corsOptions));
-
-// Additional CORS headers middleware for extra compatibility
-app.use((req, res, next) => {
+app.options('*', (req, res) => {
   res.header('Access-Control-Allow-Origin', '*');
-  res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, Accept, X-Requested-With');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, HEAD');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, Accept, X-Requested-With, Origin, Access-Control-Request-Method, Access-Control-Request-Headers');
+  res.header('Access-Control-Max-Age', '86400');
+  res.status(200).end();
+});
+
+// Additional CORS headers middleware for maximum compatibility
+app.use((req, res, next) => {
+  // Set CORS headers on every response
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, HEAD');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, Accept, X-Requested-With, Origin, Access-Control-Request-Method, Access-Control-Request-Headers');
+  res.header('Access-Control-Max-Age', '86400');
   
-  // Handle preflight
-  if (req.method === 'OPTIONS') {
-    return res.status(200).end();
-  }
+  // Log the request for debugging
+  console.log(`${req.method} ${req.path} - Origin: ${req.get('Origin') || 'none'}`);
   
   next();
 });
