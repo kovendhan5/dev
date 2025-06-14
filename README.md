@@ -2,6 +2,8 @@
 
 A production-ready serverless contact form API built on Google Cloud Platform that handles form submissions, stores data securely, and sends email notifications.
 
+**🚀 Status: APIs Enabled - Ready for Deployment**
+
 ## 🌟 Features
 
 - ✅ **Serverless Architecture** - Built with Google Cloud Functions
