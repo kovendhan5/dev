@@ -11,15 +11,15 @@ const COMPANY_NAME = process.env.COMPANY_NAME || 'Your Company';
  * Sends both confirmation and notification emails
  * @param {Object} contactData - The contact form data
  * @param {string} submissionId - The Firestore document ID
- * @returns {Promise<void>}
+ * @return {Promise<void>}
  */
 async function sendEmails(contactData, submissionId) {
   try {
     const promises = [
       sendConfirmationEmail(contactData, submissionId),
-      sendNotificationEmail(contactData, submissionId)
+      sendNotificationEmail(contactData, submissionId),
     ];
-    
+
     await Promise.all(promises);
     console.log('All emails sent successfully');
   } catch (error) {
@@ -32,22 +32,22 @@ async function sendEmails(contactData, submissionId) {
  * Sends confirmation email to the user
  * @param {Object} contactData - The contact form data
  * @param {string} submissionId - The Firestore document ID
- * @returns {Promise<void>}
+ * @return {Promise<void>}
  */
 async function sendConfirmationEmail(contactData, submissionId) {
-  const { name, email, subject } = contactData;
-  
+  const {name, email, subject} = contactData;
+
   const emailContent = {
     to: email,
     from: {
       email: FROM_EMAIL,
-      name: COMPANY_NAME
+      name: COMPANY_NAME,
     },
     subject: `Thank you for contacting ${COMPANY_NAME}`,
     html: generateConfirmationEmailTemplate(name, subject, submissionId),
-    text: generateConfirmationEmailText(name, subject, submissionId)
+    text: generateConfirmationEmailText(name, subject, submissionId),
   };
-  
+
   try {
     await sgMail.send(emailContent);
     console.log(`Confirmation email sent to: ${email}`);
@@ -61,23 +61,23 @@ async function sendConfirmationEmail(contactData, submissionId) {
  * Sends notification email to admin
  * @param {Object} contactData - The contact form data
  * @param {string} submissionId - The Firestore document ID
- * @returns {Promise<void>}
+ * @return {Promise<void>}
  */
 async function sendNotificationEmail(contactData, submissionId) {
-  const { name, email, message, subject } = contactData;
-  
+  const {email, subject} = contactData;
+
   const emailContent = {
     to: ADMIN_EMAIL,
     from: {
       email: FROM_EMAIL,
-      name: COMPANY_NAME
+      name: COMPANY_NAME,
     },
     subject: `New Contact Form Submission: ${subject || 'No Subject'}`,
     html: generateNotificationEmailTemplate(contactData, submissionId),
     text: generateNotificationEmailText(contactData, submissionId),
-    replyTo: email
+    replyTo: email,
   };
-  
+
   try {
     await sgMail.send(emailContent);
     console.log(`Notification email sent to admin: ${ADMIN_EMAIL}`);
@@ -114,7 +114,8 @@ function generateConfirmationEmailTemplate(name, subject, submissionId) {
             </div>
             <div class="content">
                 <p>Dear ${name},</p>
-                <p>Thank you for reaching out to us. We have received your message and will get back to you as soon as possible.</p>
+                <p>Thank you for reaching out to us. We have received your message and will get back to you 
+                   as soon as possible.</p>
                 ${subject ? `<p><strong>Subject:</strong> ${subject}</p>` : ''}
                 <p><strong>Reference ID:</strong> ${submissionId}</p>
                 <p>We typically respond within 24-48 hours during business days.</p>
@@ -137,7 +138,8 @@ function generateConfirmationEmailText(name, subject, submissionId) {
   return `
 Dear ${name},
 
-Thank you for reaching out to ${COMPANY_NAME}. We have received your message and will get back to you as soon as possible.
+Thank you for reaching out to ${COMPANY_NAME}. We have received your message and will get back to you 
+as soon as possible.
 
 ${subject ? `Subject: ${subject}` : ''}
 Reference ID: ${submissionId}
@@ -156,8 +158,8 @@ This is an automated confirmation email. Please do not reply to this email.
  * Generates HTML template for notification email
  */
 function generateNotificationEmailTemplate(contactData, submissionId) {
-  const { name, email, message, subject } = contactData;
-  
+  const {name, email, message, subject} = contactData;
+
   return `
     <!DOCTYPE html>
     <html>
@@ -209,8 +211,8 @@ function generateNotificationEmailTemplate(contactData, submissionId) {
  * Generates plain text for notification email
  */
 function generateNotificationEmailText(contactData, submissionId) {
-  const { name, email, message, subject } = contactData;
-  
+  const {name, email, message, subject} = contactData;
+
   return `
 New Contact Form Submission
 
@@ -229,5 +231,5 @@ Received: ${new Date().toLocaleString()}
 module.exports = {
   sendEmails,
   sendConfirmationEmail,
-  sendNotificationEmail
+  sendNotificationEmail,
 };

@@ -1,5 +1,5 @@
 const request = require('supertest');
-const { app } = require('../../src/index');
+const { app, clearRateLimit } = require('../../src/index');
 
 // Mock the database and email modules
 jest.mock('../../src/database');
@@ -12,6 +12,9 @@ describe('Contact Form API Integration Tests', () => {
   beforeEach(() => {
     // Reset mocks
     jest.clearAllMocks();
+    
+    // Clear rate limiting between tests
+    clearRateLimit();
     
     // Mock successful database save
     saveContactSubmission.mockResolvedValue('test-doc-id-123');
