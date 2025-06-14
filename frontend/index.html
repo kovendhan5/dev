@@ -289,10 +289,10 @@
                 <br>
                 <strong>Option 2:</strong> Deploy this to a web server
             </div>
-            
-            <div class="api-status">
+              <div class="api-status">
                 <div class="status-dot"></div>
                 <span>API Status: <strong>Online & Ready</strong></span>
+                <button onclick="testAPIDirectly()" style="margin-left: 10px; padding: 5px 10px; background: #667eea; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 0.8em;">Test API</button>
             </div>
         </div>
 
@@ -363,19 +363,30 @@
         });        async function checkAPIHealth() {
             try {
                 console.log('🔍 Checking API health...');
+                
+                // Add timeout and better error handling
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+                
                 const response = await fetch(`${API_BASE_URL}/health`, {
                     method: 'GET',
                     mode: 'cors',
+                    cache: 'no-cache',
                     headers: {
                         'Accept': 'application/json',
-                    }
+                        'Content-Type': 'application/json',
+                    },
+                    signal: controller.signal
                 });
+                
+                clearTimeout(timeoutId);
                 
                 if (!response.ok) {
                     throw new Error(`HTTP ${response.status}: ${response.statusText}`);
                 }
                 
                 const data = await response.json();
+                console.log('✅ API Health Response:', data);
                 
                 if (data.status === 'healthy') {
                     console.log('✅ API Health Check: Passed');
@@ -417,18 +428,26 @@
 
             // Show loading state
             setLoadingState(true);
-            hideMessage();
-
-            try {
-                console.log('📤 Submitting form data:', data);                const response = await fetch(`${API_BASE_URL}/contact`, {
+            hideMessage();            try {
+                console.log('📤 Submitting form data:', data);
+                
+                // Add timeout and better error handling
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+                
+                const response = await fetch(`${API_BASE_URL}/contact`, {
                     method: 'POST',
                     mode: 'cors',
+                    cache: 'no-cache',
                     headers: {
                         'Content-Type': 'application/json',
                         'Accept': 'application/json',
                     },
-                    body: JSON.stringify(data)
+                    body: JSON.stringify(data),
+                    signal: controller.signal
                 });
+                
+                clearTimeout(timeoutId);
 
                 if (!response.ok) {
                     const errorText = await response.text();
@@ -529,6 +548,51 @@
             const field = e.target;
             if (field.style.borderColor === 'rgb(231, 76, 60)') {
                 field.style.borderColor = '';
+            }        }
+
+        // Direct API test function
+        async function testAPIDirectly() {
+            console.log('🧪 Testing API directly...');
+            
+            try {
+                // Test health endpoint
+                console.log('Testing health endpoint...');
+                const healthResponse = await fetch(`${API_BASE_URL}/health`, {
+                    method: 'GET',
+                    mode: 'cors',
+                    cache: 'no-cache'
+                });
+                
+                const healthData = await healthResponse.json();
+                console.log('✅ Health check response:', healthData);
+                
+                // Test contact endpoint
+                console.log('Testing contact endpoint...');
+                const testData = {
+                    name: 'API Test User',
+                    email: 'test@example.com',
+                    subject: 'API Test',
+                    message: 'This is a test message to verify API functionality.'
+                };
+                
+                const contactResponse = await fetch(`${API_BASE_URL}/contact`, {
+                    method: 'POST',
+                    mode: 'cors',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(testData)
+                });
+                
+                const contactData = await contactResponse.json();
+                console.log('✅ Contact submission response:', contactData);
+                
+                showMessage('✅ API test completed! Check browser console for details.', 'success');
+                
+            } catch (error) {
+                console.error('❌ API test failed:', error);
+                showMessage(`❌ API test failed: ${error.message}`, 'error');
             }
         }
 
