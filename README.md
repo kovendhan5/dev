@@ -17,8 +17,12 @@ A production-ready serverless contact form API built on Google Cloud Platform th
 *Successful API testing with detailed console logs showing health checks and form submissions*
 
 ### 3. Cloud Function Deployment Success
-![Deployment Screenshot](screenshots/deployment-success.png)(screenshots/gcp-firestore.png)
+![Deployment Screenshot](screenshots/deployment-success.png)
 *Google Cloud Functions deployment showing active status and successful revisions*
+
+### 4. GCP Firestore Database
+![GCP Firestore Screenshot](screenshots/gcp-firestore.png)
+*Firestore database showing stored contact form submissions and data structure*
 
 ## 🏆 Project Completion Summary
 

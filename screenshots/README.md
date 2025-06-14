@@ -5,13 +5,15 @@ This directory contains project screenshots showing:
 1. **frontend-ui.png** - Beautiful contact form interface
 2. **api-testing.png** - API testing and console logs
 3. **deployment-success.png** - Cloud Function deployment success
+4. **gcp-firestore.png** - Firestore database with stored submissions
 
 ## How to Add Screenshots
 
-1. Save your three screenshots with these exact names:
+1. Save your four screenshots with these exact names:
    - `frontend-ui.png`
    - `api-testing.png` 
    - `deployment-success.png`
+   - `gcp-firestore.png`
 
 2. Place them in this `screenshots/` directory
 
