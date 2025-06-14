@@ -1,0 +1,46 @@
+{
+  "name": "serverless-contact-form-api",
+  "version": "1.0.0",
+  "description": "Serverless Contact Form API on Google Cloud Platform",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "functions-framework --target=contactFormHandler --source=src",
+    "dev": "functions-framework --target=contactFormHandler --source=src --port=8080",
+    "test": "jest",
+    "test:unit": "jest tests/unit",
+    "test:integration": "jest tests/integration",
+    "test:coverage": "jest --coverage",
+    "deploy": "gcloud functions deploy contact-form-api --runtime nodejs18 --trigger-http --allow-unauthenticated --source=src --entry-point=contactFormHandler",
+    "lint": "eslint src/**/*.js",
+    "lint:fix": "eslint src/**/*.js --fix"
+  },
+  "dependencies": {
+    "@google-cloud/functions-framework": "^3.3.0",
+    "@google-cloud/firestore": "^7.1.0",
+    "@sendgrid/mail": "^8.1.0",
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
+    "helmet": "^7.1.0",
+    "joi": "^17.11.0",
+    "dotenv": "^16.3.1"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "supertest": "^6.3.3",
+    "eslint": "^8.55.0",
+    "eslint-config-google": "^0.14.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": [
+    "serverless",
+    "contact-form",
+    "google-cloud",
+    "firestore",
+    "sendgrid",
+    "api"
+  ],
+  "author": "Development Team",
+  "license": "MIT"
+}

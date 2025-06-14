@@ -14,7 +14,8 @@ yarn-error.log*
 # Google Cloud
 .gcloudignore
 service-account-key.json
-*.json
+github-actions-key.json
+*-key.json
 
 # Logs
 logs
