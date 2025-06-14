@@ -146,25 +146,15 @@ jobs:
             --runtime nodejs18 \
             --trigger-http \
             --allow-unauthenticated \
-            --source=. \
-            --entry-point=contactFormHandler \
+            --source=. \            --entry-point=contactFormHandler \
             --set-env-vars="GCP_PROJECT_ID=${{ env.GCP_PROJECT_ID }},SENDGRID_API_KEY=${{ secrets.SENDGRID_API_KEY }},ADMIN_EMAIL=${{ secrets.ADMIN_EMAIL }},FROM_EMAIL=${{ secrets.FROM_EMAIL }},COMPANY_NAME=${{ secrets.COMPANY_NAME }},CORS_ORIGIN=${{ secrets.CORS_ORIGIN }}" \
             --max-instances=50 \
             --memory=512MB \
             --timeout=60s
       
-      - name: Create GitHub Release
+      - name: Deployment Summary
         if: success()
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: v${{ github.run_number }}
-          release_name: Release v${{ github.run_number }}
-          body: |
-            Automated release of contact form API
-            - Deployed to production
-            - All tests passed
-            - Security scan completed
-          draft: false
-          prerelease: false
+        run: |
+          echo "🎉 Production deployment successful!"
+          echo "Function URL: https://us-central1-${{ env.GCP_PROJECT_ID }}.cloudfunctions.net/contact-form-api"
+          echo "Deployment completed at: $(date)"
