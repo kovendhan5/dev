@@ -323,5 +323,3 @@ For support and questions:
 - Check the documentation
 
 ---
-
-Built with ❤️ using Google Cloud Platform and modern serverless architecture.
