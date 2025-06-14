@@ -1,4 +1,34 @@
-const fetch = require('node-fetch');
+const https = require('https');
+
+function makeRequest(url, options = {}) {
+  return new Promise((resolve, reject) => {
+    const req = https.request(url, options, (res) => {
+      let data = '';
+      res.on('data', (chunk) => data += chunk);
+      res.on('end', () => {
+        try {
+          resolve({
+            status: res.statusCode,
+            data: JSON.parse(data)
+          });
+        } catch (e) {
+          resolve({
+            status: res.statusCode,
+            data: data
+          });
+        }
+      });
+    });
+    
+    req.on('error', reject);
+    
+    if (options.body) {
+      req.write(options.body);
+    }
+    
+    req.end();
+  });
+}
 
 async function testLiveAPI() {
   const apiUrl = 'https://us-central1-serverless-462906.cloudfunctions.net/contact-form-api';
@@ -8,9 +38,8 @@ async function testLiveAPI() {
   // Test 1: Health Check
   console.log('1. Testing Health Endpoint...');
   try {
-    const healthResponse = await fetch(`${apiUrl}/health`);
-    const healthData = await healthResponse.json();
-    console.log('✅ Health Check:', healthData);
+    const healthResponse = await makeRequest(`${apiUrl}/health`);
+    console.log('✅ Health Check:', healthResponse.data);
   } catch (error) {
     console.log('❌ Health Check Error:', error.message);
   }
@@ -25,16 +54,16 @@ async function testLiveAPI() {
       message: 'This is a test of the live serverless contact form API!'
     };
     
-    const contactResponse = await fetch(`${apiUrl}/contact`, {
+    const contactResponse = await makeRequest(`${apiUrl}/contact`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'Content-Length': Buffer.byteLength(JSON.stringify(contactData))
       },
       body: JSON.stringify(contactData)
     });
     
-    const contactResult = await contactResponse.json();
-    console.log('✅ Contact Form Response:', contactResult);
+    console.log('✅ Contact Form Response:', contactResponse.data);
   } catch (error) {
     console.log('❌ Contact Form Error:', error.message);
   }
