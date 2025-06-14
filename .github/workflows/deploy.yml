@@ -146,7 +146,8 @@ jobs:
             --runtime nodejs18 \
             --trigger-http \
             --allow-unauthenticated \
-            --source=. \            --entry-point=contactFormHandler \
+            --source=. \
+            --entry-point=contactFormHandler \
             --set-env-vars="GCP_PROJECT_ID=${{ env.GCP_PROJECT_ID }},SENDGRID_API_KEY=${{ secrets.SENDGRID_API_KEY }},ADMIN_EMAIL=${{ secrets.ADMIN_EMAIL }},FROM_EMAIL=${{ secrets.FROM_EMAIL }},COMPANY_NAME=${{ secrets.COMPANY_NAME }},CORS_ORIGIN=${{ secrets.CORS_ORIGIN }}" \
             --max-instances=50 \
             --memory=512MB \
