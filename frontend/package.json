@@ -1,0 +1,13 @@
+{
+  "name": "contact-form-frontend",
+  "version": "1.0.0",
+  "description": "Frontend for serverless contact form API",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "serve": "python -m http.server 8000"
+  },
+  "keywords": ["frontend", "contact-form", "serverless"],
+  "author": "Serverless Contact Form",
+  "license": "MIT"
+}

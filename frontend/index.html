@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact Form - Serverless API Demo</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            width: 100%;
+            padding: 40px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #667eea, #764ba2, #667eea);
+            background-size: 200% 100%;
+            animation: gradient 3s ease infinite;
+        }
+
+        @keyframes gradient {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            color: #333;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 300;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 1.1em;
+            line-height: 1.6;
+        }
+
+        .api-status {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin: 20px 0;
+            padding: 15px;
+            background: rgba(76, 175, 80, 0.1);
+            border: 1px solid rgba(76, 175, 80, 0.3);
+            border-radius: 10px;
+            font-size: 0.95em;
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            background: #4CAF50;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+            position: relative;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+            font-size: 0.95em;
+        }
+
+        .required {
+            color: #e74c3c;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 15px 20px;
+            border: 2px solid #e1e8ed;
+            border-radius: 12px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.8);
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 120px;
+            font-family: inherit;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .submit-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .submit-btn .btn-text {
+            transition: opacity 0.3s ease;
+        }
+
+        .submit-btn .spinner {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top: 2px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            opacity: 0;
+        }
+
+        @keyframes spin {
+            0% { transform: translate(-50%, -50%) rotate(0deg); }
+            100% { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+
+        .loading .btn-text { opacity: 0; }
+        .loading .spinner { opacity: 1; }
+
+        .message {
+            margin: 20px 0;
+            padding: 15px 20px;
+            border-radius: 12px;
+            font-weight: 500;
+            display: none;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .message.success {
+            background: rgba(76, 175, 80, 0.1);
+            color: #2e7d32;
+            border: 1px solid rgba(76, 175, 80, 0.3);
+        }
+
+        .message.error {
+            background: rgba(244, 67, 54, 0.1);
+            color: #c62828;
+            border: 1px solid rgba(244, 67, 54, 0.3);
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .footer a {
+            color: #667eea;
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+
+        .api-info {
+            background: rgba(102, 126, 234, 0.05);
+            border: 1px solid rgba(102, 126, 234, 0.2);
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 30px;
+        }
+
+        .api-info h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+
+        .api-endpoint {
+            background: rgba(0, 0, 0, 0.05);
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            margin: 5px 0;
+            word-break: break-all;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+                padding: 30px 20px;
+            }
+
+            .header h1 {
+                font-size: 2em;
+            }
+
+            .form-group input,
+            .form-group textarea {
+                padding: 12px 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">        <div class="header">
+            <h1><i class="fas fa-paper-plane"></i> Contact Form</h1>
+            <p>Send us a message using our serverless contact form API</p>
+            
+            <!-- CORS Warning for file:// protocol -->
+            <div id="corsWarning" style="display: none; background: rgba(255, 193, 7, 0.1); border: 1px solid rgba(255, 193, 7, 0.3); border-radius: 10px; padding: 15px; margin: 20px 0; color: #856404;">
+                <strong>⚠️ CORS Issue Detected:</strong> 
+                You're viewing this from a file:// URL. For the form to work properly, please:
+                <br><br>
+                <strong>Option 1:</strong> Run the local server: <code>node server.js</code> then visit <code>http://localhost:3000</code>
+                <br>
+                <strong>Option 2:</strong> Deploy this to a web server
+            </div>
+            
+            <div class="api-status">
+                <div class="status-dot"></div>
+                <span>API Status: <strong>Online & Ready</strong></span>
+            </div>
+        </div>
+
+        <form id="contactForm">
+            <div class="form-group">
+                <label for="name">Full Name <span class="required">*</span></label>
+                <input type="text" id="name" name="name" required placeholder="Enter your full name">
+            </div>
+
+            <div class="form-group">
+                <label for="email">Email Address <span class="required">*</span></label>
+                <input type="email" id="email" name="email" required placeholder="Enter your email address">
+            </div>
+
+            <div class="form-group">
+                <label for="subject">Subject</label>
+                <input type="text" id="subject" name="subject" placeholder="What is this message about?">
+            </div>
+
+            <div class="form-group">
+                <label for="message">Message <span class="required">*</span></label>
+                <textarea id="message" name="message" required placeholder="Write your message here..."></textarea>
+            </div>
+
+            <button type="submit" class="submit-btn">
+                <span class="btn-text"><i class="fas fa-send"></i> Send Message</span>
+                <div class="spinner"></div>
+            </button>
+        </form>
+
+        <div id="responseMessage" class="message"></div>
+
+        <div class="api-info">
+            <h3><i class="fas fa-info-circle"></i> API Information</h3>
+            <p><strong>Endpoint:</strong></p>
+            <div class="api-endpoint">POST https://us-central1-serverless-462906.cloudfunctions.net/contact-form-api/contact</div>
+            <p style="margin-top: 10px; font-size: 0.9em; color: #666;">
+                This form submits data to a serverless Google Cloud Function that validates input, 
+                stores messages in Firestore, and sends email notifications via SendGrid.
+            </p>
+        </div>
+
+        <div class="footer">
+            <p>Powered by <strong>Google Cloud Functions</strong> • 
+            <a href="https://github.com" target="_blank">View Source Code</a></p>
+        </div>
+    </div>
+
+    <script>
+        // API Configuration
+        const API_BASE_URL = 'https://us-central1-serverless-462906.cloudfunctions.net/contact-form-api';
+        
+        // DOM Elements
+        const form = document.getElementById('contactForm');
+        const submitBtn = form.querySelector('.submit-btn');
+        const responseMessage = document.getElementById('responseMessage');        // Check API health on page load
+        checkAPIHealth();
+        
+        // Check if we're on file:// protocol and show warning
+        if (window.location.protocol === 'file:') {
+            document.getElementById('corsWarning').style.display = 'block';
+        }
+
+        // Form submission handler
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            await submitForm();
+        });        async function checkAPIHealth() {
+            try {
+                console.log('🔍 Checking API health...');
+                const response = await fetch(`${API_BASE_URL}/health`, {
+                    method: 'GET',
+                    mode: 'cors',
+                    headers: {
+                        'Accept': 'application/json',
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                
+                if (data.status === 'healthy') {
+                    console.log('✅ API Health Check: Passed');
+                    console.log('API Version:', data.version);
+                    console.log('Timestamp:', data.timestamp);
+                } else {
+                    throw new Error('API returned unhealthy status');
+                }
+            } catch (error) {
+                console.warn('❌ API Health Check: Failed', error);
+                
+                // Show detailed error information
+                let errorMsg = 'API health check failed. ';
+                if (error.name === 'TypeError' && error.message.includes('fetch')) {
+                    errorMsg += 'This might be a CORS issue. Try running the local server: node server.js';
+                } else {
+                    errorMsg += error.message;
+                }
+                
+                showMessage(errorMsg, 'error');
+            }
+        }
+
+        async function submitForm() {
+            // Get form data
+            const formData = new FormData(form);
+            const data = {
+                name: formData.get('name').trim(),
+                email: formData.get('email').trim(),
+                subject: formData.get('subject').trim(),
+                message: formData.get('message').trim()
+            };
+
+            // Validate required fields
+            if (!data.name || !data.email || !data.message) {
+                showMessage('Please fill in all required fields.', 'error');
+                return;
+            }
+
+            // Show loading state
+            setLoadingState(true);
+            hideMessage();
+
+            try {
+                console.log('📤 Submitting form data:', data);                const response = await fetch(`${API_BASE_URL}/contact`, {
+                    method: 'POST',
+                    mode: 'cors',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    let errorData;
+                    try {
+                        errorData = JSON.parse(errorText);
+                    } catch {
+                        errorData = { message: `HTTP ${response.status}: ${response.statusText}` };
+                    }
+                    throw new Error(errorData.message || 'Server error');
+                }
+
+                const result = await response.json();
+                console.log('📥 API Response:', result);
+
+                if (result.success) {
+                    showMessage(`✅ ${result.message}`, 'success');
+                    form.reset();
+                    
+                    // Log success details
+                    console.log('🎉 Message sent successfully!');
+                    console.log('Message ID:', result.data?.id);
+                    console.log('Timestamp:', result.timestamp);
+                } else {
+                    throw new Error(result.message || 'Submission failed');
+                }
+
+            } catch (error) {
+                console.error('❌ Submission error:', error);
+                showMessage(`❌ Error: ${error.message}`, 'error');
+            } finally {
+                setLoadingState(false);
+            }
+        }
+
+        function setLoadingState(loading) {
+            if (loading) {
+                submitBtn.disabled = true;
+                submitBtn.classList.add('loading');
+            } else {
+                submitBtn.disabled = false;
+                submitBtn.classList.remove('loading');
+            }
+        }
+
+        function showMessage(text, type) {
+            responseMessage.textContent = text;
+            responseMessage.className = `message ${type}`;
+            responseMessage.style.display = 'block';
+            
+            // Auto-hide success messages after 5 seconds
+            if (type === 'success') {
+                setTimeout(hideMessage, 5000);
+            }
+        }
+
+        function hideMessage() {
+            responseMessage.style.display = 'none';
+        }
+
+        // Real-time form validation
+        const inputs = form.querySelectorAll('input, textarea');
+        inputs.forEach(input => {
+            input.addEventListener('blur', validateField);
+            input.addEventListener('input', clearFieldError);
+        });
+
+        function validateField(e) {
+            const field = e.target;
+            const value = field.value.trim();
+            
+            // Remove existing error styling
+            field.style.borderColor = '';
+            
+            // Validate based on field type
+            if (field.required && !value) {
+                field.style.borderColor = '#e74c3c';
+                return false;
+            }
+            
+            if (field.type === 'email' && value) {
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailRegex.test(value)) {
+                    field.style.borderColor = '#e74c3c';
+                    return false;
+                }
+            }
+            
+            // Success styling
+            if (value) {
+                field.style.borderColor = '#4CAF50';
+            }
+            
+            return true;
+        }
+
+        function clearFieldError(e) {
+            const field = e.target;
+            if (field.style.borderColor === 'rgb(231, 76, 60)') {
+                field.style.borderColor = '';
+            }
+        }
+
+        // Add some interactive effects
+        document.addEventListener('DOMContentLoaded', () => {
+            // Animate form elements on scroll/load
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.opacity = '1';
+                        entry.target.style.transform = 'translateY(0)';
+                    }
+                });
+            });
+
+            // Add animation styles
+            const formGroups = document.querySelectorAll('.form-group');
+            formGroups.forEach((group, index) => {
+                group.style.opacity = '0';
+                group.style.transform = 'translateY(20px)';
+                group.style.transition = `opacity 0.6s ease ${index * 0.1}s, transform 0.6s ease ${index * 0.1}s`;
+                observer.observe(group);
+            });
+
+            // Trigger animations
+            setTimeout(() => {
+                formGroups.forEach(group => {
+                    group.style.opacity = '1';
+                    group.style.transform = 'translateY(0)';
+                });
+            }, 100);
+        });
+    </script>
+</body>
+</html>
